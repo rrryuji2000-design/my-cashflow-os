@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cashflow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>My Cashflow OS</title>
+<style>
+:root{--bg:#0b0f14;--panel:#121821;--panel2:#18212d;--line:#273445;--text:#eef3f8;--muted:#9aa7b5;--good:#86efac;--bad:#fca5a5;--accent:#67e8f9;--safe:env(safe-area-inset-bottom)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI","Noto Sans JP",sans-serif}
+body{min-height:100vh;padding-bottom:calc(78px + var(--safe))}
+.app{max-width:900px;margin:auto;padding:calc(14px + env(safe-area-inset-top)) 14px 20px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.head h1{font-size:22px;margin:0}.muted{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px}
+.metric{font-size:23px;font-weight:700;margin-top:5px}
+.good{color:var(--good)}.bad{color:var(--bad)}
+.section{display:none}.section.active{display:block}
+.bottomnav{position:fixed;left:0;right:0;bottom:0;padding:8px 8px calc(8px + var(--safe));background:rgba(11,15,20,.96);backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:50}
+.navbtn{border:0;background:transparent;color:var(--muted);font-size:10px;padding:8px 2px}.navbtn.active{color:var(--accent)}.navico{font-size:20px;display:block;margin-bottom:3px}
+.subtabs{display:flex;gap:8px;overflow:auto;margin:12px 0}.subtab{white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 12px;border-radius:999px}.subtab.active{border-color:var(--accent)}
+input,select,button{font:inherit}input,select{width:100%;background:#0e151d;color:var(--text);border:1px solid var(--line);padding:11px;border-radius:12px;font-size:16px}
+button{cursor:pointer}.primary{width:100%;background:var(--accent);color:#001018;border:0;padding:12px 14px;border-radius:12px;font-weight:700}.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:9px 11px;border-radius:10px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form .full{grid-column:1/-1}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:720px}th,td{padding:9px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);font-size:12px;white-space:nowrap}th{background:#101720;color:var(--muted);position:sticky;top:0;z-index:2}th:first-child,td:first-child{position:sticky;left:0;background:#101720;z-index:1}
+.monthrow td{background:#162130;font-weight:700}.sumrow td{background:#111c28;font-weight:700}
+h3{margin:2px 0 12px;font-size:16px}.sp{margin-top:12px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--panel2);font-size:11px;color:var(--muted)}
+.install{display:none;margin:10px 0 14px}.hint{font-size:12px;line-height:1.5;color:var(--muted)}
+.listcard{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.listcard:last-child{border-bottom:0}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}.form{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="head">
+<div><h1>My Cashflow OS</h1><div class="muted">12か月先まで見える資金繰りアプリ</div></div>
+<button class="secondary" onclick="exportData()">保存</button>
+</div>
+
+<div id="installBox" class="card install">
+<h3>ホーム画面に追加</h3>
+<div class="hint">iPhoneではSafariの共有ボタン →「ホーム画面に追加」で、通常のアプリのように起動できます。</div>
+</div>
+
+<section id="home" class="section active">
+<div class="grid">
+<div class="card"><div class="muted">普通預金</div><div class="metric" id="bankTotal">¥0</div></div>
+<div class="card"><div class="muted">今月収支</div><div class="metric" id="thisMonthNet">¥0</div></div>
+<div class="card"><div class="muted">12か月後</div><div class="metric" id="futureBank">¥0</div></div>
+<div class="card"><div class="muted">車ローン残債</div><div class="metric" id="carLoanMetric">¥0</div></div>
+</div>
+<div class="card sp"><div style="display:flex;justify-content:space-between;align-items:center"><h3>12か月キャッシュフロー</h3><span class="pill">横スクロール</span></div><div class="tablewrap"><table id="cfTable"></table></div></div>
+</section>
+
+<section id="accounts" class="section">
+<div class="subtabs">
+<button class="subtab active" data-sub="bank">普通口座</button>
+<button class="subtab" data-sub="cards">クレカ</button>
+</div>
+<div id="bank" class="subsection">
+<div class="card"><h3>普通預金口座</h3><div class="form">
+<div class="full"><div class="muted">口座名</div><input id="accName" placeholder="三井住友 普通"></div>
+<div><div class="muted">現在残高</div><input id="accBalance" type="number"></div>
+<div><div class="muted">基準日</div><input id="accDate" type="date"></div>
+<div class="full"><button class="primary" onclick="addAccount()">口座を登録</button></div>
+</div></div>
+<div class="card sp"><h3>登録済み</h3><div id="accountsList"></div></div>
+</div>
+<div id="cards" class="subsection" style="display:none">
+<div class="card"><h3>クレジットカード</h3><div class="form">
+<div class="full"><div class="muted">カード名</div><input id="cardName" placeholder="楽天カード"></div>
+<div><div class="muted">引落口座</div><select id="cardAccount"></select></div>
+<div><div class="muted">支払日</div><input id="cardPayDay" type="number" min="1" max="31" value="27"></div>
+<div><div class="muted">支払月</div><select id="cardLag"><option value="1">翌月</option><option value="2">翌々月</option><option value="0">当月</option></select></div>
+<div class="full"><button class="primary" onclick="addCard()">カードを登録</button></div>
+</div></div>
+<div class="card sp"><h3>登録済み</h3><div id="cardsList"></div></div>
+</div>
+</section>
+
+<section id="entries" class="section">
+<div class="subtabs">
+<button class="subtab active" data-sub="recurring">固定費</button>
+<button class="subtab" data-sub="spend">変動費</button>
+<button class="subtab" data-sub="installments">分割</button>
+</div>
+<div id="recurring" class="subsection">
+<div class="card"><h3>固定費・定期収入</h3><div class="form">
+<div class="full"><div class="muted">名称</div><input id="recName" placeholder="給与 / 家賃 / 保険"></div>
+<div><div class="muted">種別</div><select id="recType"><option value="income">定期収入</option><option value="expense">固定費</option></select></div>
+<div><div class="muted">月額</div><input id="recAmount" type="number"></div>
+<div><div class="muted">毎月の日</div><input id="recDay" type="number" value="25"></div>
+<div><div class="muted">方法</div><select id="recMethod" onchange="refreshMethodTarget()"><option value="bank">普通預金</option><option value="card">クレカ</option></select></div>
+<div><div class="muted">紐づけ先</div><select id="recTarget"></select></div>
+<div><div class="muted">開始月</div><input id="recStart" type="month"></div>
+<div><div class="muted">終了月</div><input id="recEnd" type="month"></div>
+<div class="full"><button class="primary" onclick="addRecurring()">登録</button></div>
+</div></div><div class="card sp"><h3>登録済み</h3><div id="recList"></div></div>
+</div>
+<div id="spend" class="subsection" style="display:none">
+<div class="card"><h3>月ごとのカード利用額</h3><div class="form">
+<div><div class="muted">利用月</div><input id="spendMonth" type="month"></div>
+<div><div class="muted">カード</div><select id="spendCard"></select></div>
+<div><div class="muted">金額</div><input id="spendAmount" type="number"></div>
+<div class="full"><button class="primary" onclick="addCardSpend()">登録</button></div>
+</div></div><div class="card sp"><h3>登録済み</h3><div id="spendList"></div></div>
+</div>
+<div id="installments" class="subsection" style="display:none">
+<div class="card"><h3>分割払い</h3><div class="form">
+<div class="full"><div class="muted">項目名</div><input id="insName" placeholder="PC / 家具"></div>
+<div><div class="muted">カード</div><select id="insCard"></select></div>
+<div><div class="muted">毎月支払額</div><input id="insAmount" type="number"></div>
+<div><div class="muted">初回支払月</div><input id="insStart" type="month"></div>
+<div><div class="muted">回数</div><input id="insCount" type="number" value="12"></div>
+<div class="full"><button class="primary" onclick="addInstallment()">登録</button></div>
+</div></div><div class="card sp"><h3>登録済み</h3><div id="insList"></div></div>
+</div>
+</section>
+
+<section id="bs" class="section">
+<div class="card">
+<h3>BS</h3>
+<div class="form">
+<div><div class="muted">証券口座への累計入金額</div><input id="brokerDeposits" type="number" onchange="saveBS()"></div>
+<div><div class="muted">車ローン現在残債</div><input id="carLoanBalance" type="number" onchange="saveBS()"></div>
+<div><div class="muted">毎月引落額</div><input id="carLoanPayment" type="number" onchange="saveBS()"></div>
+<div><div class="muted">毎月元金減少額</div><input id="carLoanPrincipal" type="number" onchange="saveBS()"></div>
+<div><div class="muted">引落日</div><input id="carLoanDay" type="number" value="27" onchange="saveBS()"></div>
+<div><div class="muted">引落口座</div><select id="carLoanAccount" onchange="saveBS()"></select></div>
+</div>
+<div class="tablewrap sp"><table><tbody>
+<tr><th>普通預金</th><td id="bsBanks">¥0</td></tr>
+<tr><th>証券口座への累計入金額</th><td id="bsBroker">¥0</td></tr>
+<tr><th>資産合計</th><td id="bsAssets">¥0</td></tr>
+<tr><th>車ローン残債</th><td id="bsCarLoan">¥0</td></tr>
+<tr><th>純資産</th><td id="bsNet">¥0</td></tr>
+</tbody></table></div>
+<div class="hint sp">CFでは「毎月引落額」を減額し、BSでは「毎月元金減少額」だけ車ローン残債を減らします。</div>
+</div>
+</section>
+
+<section id="more" class="section">
+<div class="card"><h3>データ管理</h3><div class="hint">データはこの端末内に保存されます。機種変更やSafariデータ削除に備えてJSONバックアップを保存してください。</div><button class="primary sp" onclick="exportData()">バックアップを書き出す</button><input class="sp" type="file" accept=".json" onchange="importData(event)"><button class="secondary sp" onclick="resetAll()">全データ初期化</button></div>
+<div class="card sp"><h3>ホーム画面への追加</h3><div class="hint">Safariで開き、共有 →「ホーム画面に追加」。追加後はアドレスバーなしで起動できます。</div></div>
+</section>
+</div>
+
+<nav class="bottomnav">
+<button class="navbtn active" data-tab="home"><span class="navico">⌂</span>CF</button>
+<button class="navbtn" data-tab="accounts"><span class="navico">▣</span>口座</button>
+<button class="navbtn" data-tab="entries"><span class="navico">＋</span>登録</button>
+<button class="navbtn" data-tab="bs"><span class="navico">◫</span>BS</button>
+<button class="navbtn" data-tab="more"><span class="navico">•••</span>その他</button>
+</nav>
+
+<script>
+const KEY='myCashflowOS_pwa_v1';
+const blank={accounts:[],cards:[],recurring:[],cardSpend:[],installments:[],bs:{brokerDeposits:0,carLoanBalance:0,carLoanPayment:0,carLoanPrincipal:0,carLoanDay:27,carLoanAccount:''}};
+let d=JSON.parse(localStorage.getItem(KEY)||JSON.stringify(blank)); for(const k of Object.keys(blank)) if(d[k]===undefined)d[k]=blank[k];
+const yen=n=>'¥'+Math.round(n||0).toLocaleString('ja-JP');
+const now=new Date(),today=now.toISOString().slice(0,10),curMonth=today.slice(0,7);
+accDate.value=today;recStart.value=curMonth;spendMonth.value=curMonth;insStart.value=curMonth;
+if(!window.matchMedia('(display-mode: standalone)').matches) installBox.style.display='block';
+
+document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')});
+document.querySelectorAll('.subtab').forEach(b=>b.onclick=()=>{const wrap=b.parentElement;wrap.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));b.classList.add('active');let parent=wrap.parentElement;parent.querySelectorAll('.subsection').forEach(x=>x.style.display='none');document.getElementById(b.dataset.sub).style.display='block'});
+
+function id(){return crypto.randomUUID()} function save(){localStorage.setItem(KEY,JSON.stringify(d));render()}
+function monthAdd(m,n){let[y,mo]=m.split('-').map(Number),dt=new Date(y,mo-1+n,1);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')}
+function months(){return Array.from({length:12},(_,i)=>monthAdd(curMonth,i))}
+function dateOf(m,day){let[y,mo]=m.split('-').map(Number),last=new Date(y,mo,0).getDate();return m+'-'+String(Math.min(+day||1,last)).padStart(2,'0')}
+function accN(v){return d.accounts.find(x=>x.id===v)?.name||'未設定'} function cardN(v){return d.cards.find(x=>x.id===v)?.name||'未設定'}
+function del(arr,v){d[arr]=d[arr].filter(x=>x.id!==v);save()}
+
+function addAccount(){if(!accName.value.trim())return;d.accounts.push({id:id(),name:accName.value.trim(),balance:+accBalance.value||0,date:accDate.value||today});accName.value='';accBalance.value='';save()}
+function addCard(){if(!cardName.value.trim()||!cardAccount.value)return;d.cards.push({id:id(),name:cardName.value.trim(),accountId:cardAccount.value,payDay:+cardPayDay.value||27,lag:+cardLag.value});cardName.value='';save()}
+function addRecurring(){if(!recName.value.trim()||!recAmount.value||!recTarget.value)return;d.recurring.push({id:id(),name:recName.value.trim(),type:recType.value,amount:+recAmount.value,day:+recDay.value||1,method:recMethod.value,targetId:recTarget.value,start:recStart.value||curMonth,end:recEnd.value});recName.value='';recAmount.value='';save()}
+function addCardSpend(){if(!spendCard.value||!spendAmount.value)return;d.cardSpend.push({id:id(),month:spendMonth.value||curMonth,cardId:spendCard.value,amount:+spendAmount.value});spendAmount.value='';save()}
+function addInstallment(){if(!insName.value.trim()||!insCard.value||!insAmount.value||!insCount.value)return;d.installments.push({id:id(),name:insName.value.trim(),cardId:insCard.value,amount:+insAmount.value,start:insStart.value||curMonth,count:+insCount.value});insName.value='';insAmount.value='';save()}
+function saveBS(){d.bs={brokerDeposits:+brokerDeposits.value||0,carLoanBalance:+carLoanBalance.value||0,carLoanPayment:+carLoanPayment.value||0,carLoanPrincipal:+carLoanPrincipal.value||0,carLoanDay:+carLoanDay.value||27,carLoanAccount:carLoanAccount.value};save()}
+function refreshMethodTarget(){recTarget.innerHTML=(recMethod.value==='bank'?d.accounts.map(a=>`<option value="${a.id}">${a.name}</option>`):d.cards.map(c=>`<option value="${c.id}">${c.name}</option>`)).join('')}
+
+function events(){
+ const ev=[],ms=months();
+ d.recurring.forEach(r=>ms.forEach(m=>{if(m<r.start||(r.end&&m>r.end))return;if(r.method==='bank')ev.push({date:dateOf(m,r.day),accountId:r.targetId,amount:r.type==='income'?r.amount:-r.amount,label:r.name})}));
+ d.cards.forEach(c=>ms.forEach(pm=>{let total=0;
+   d.cardSpend.filter(s=>s.cardId===c.id&&monthAdd(s.month,c.lag)===pm).forEach(s=>total+=s.amount);
+   d.recurring.filter(r=>r.method==='card'&&r.type==='expense'&&r.targetId===c.id).forEach(r=>{
+     for(let z=-2;z<12;z++){let um=monthAdd(curMonth,z);if(um<r.start||(r.end&&um>r.end))continue;if(monthAdd(um,c.lag)===pm)total+=r.amount}
+   });
+   d.installments.filter(x=>x.cardId===c.id).forEach(x=>{for(let i=0;i<x.count;i++)if(monthAdd(x.start,i)===pm)total+=x.amount});
+   if(total)ev.push({date:dateOf(pm,c.payDay),accountId:c.accountId,amount:-total,label:c.name+' 支払'});
+ }));
+ if(d.bs.carLoanBalance>0&&d.bs.carLoanPayment>0&&d.bs.carLoanAccount){
+   ms.forEach((m,i)=>{let rem=Math.max(0,d.bs.carLoanBalance-(d.bs.carLoanPrincipal||0)*i);if(rem>0)ev.push({date:dateOf(m,d.bs.carLoanDay),accountId:d.bs.carLoanAccount,amount:-d.bs.carLoanPayment,label:'車ローン返済'})})
+ }
+ return ev.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function renderCF(){
+ const ms=months(),ev=events(),run={};d.accounts.forEach(a=>run[a.id]=a.balance);let html='<thead><tr><th>日付 / 内容</th>';d.accounts.forEach(a=>html+=`<th>${a.name}</th>`);html+='<th>合計</th></tr></thead><tbody>';let nets={};ms.forEach(m=>nets[m]=0);
+ ms.forEach(m=>{html+=`<tr class="monthrow"><td colspan="${d.accounts.length+2}">${m}</td></tr>`;let me=ev.filter(x=>x.date.startsWith(m));
+ me.forEach(e=>{html+=`<tr><td>${e.date.slice(8)}日 ${e.label}</td>`;d.accounts.forEach(a=>{if(a.id===e.accountId){run[a.id]+=e.amount;nets[m]+=e.amount;html+=`<td class="${e.amount>=0?'good':'bad'}">${e.amount>=0?'+':''}${yen(e.amount)}</td>`}else html+='<td></td>'});html+=`<td>${yen(Object.values(run).reduce((a,b)=>a+b,0))}</td></tr>`});
+ html+='<tr class="sumrow"><td>月間収支</td>';d.accounts.forEach(a=>{let n=me.filter(x=>x.accountId===a.id).reduce((s,x)=>s+x.amount,0);html+=`<td class="${n>=0?'good':'bad'}">${n>=0?'+':''}${yen(n)}</td>`});html+=`<td class="${nets[m]>=0?'good':'bad'}">${nets[m]>=0?'+':''}${yen(nets[m])}</td></tr>`;
+ html+='<tr class="sumrow"><td>月末残高</td>';d.accounts.forEach(a=>html+=`<td>${yen(run[a.id])}</td>`);html+=`<td>${yen(Object.values(run).reduce((a,b)=>a+b,0))}</td></tr>`});
+ cfTable.innerHTML=html+'</tbody>';bankTotal.textContent=yen(d.accounts.reduce((s,a)=>s+a.balance,0));thisMonthNet.textContent=yen(nets[curMonth]||0);thisMonthNet.className='metric '+((nets[curMonth]||0)>=0?'good':'bad');futureBank.textContent=yen(Object.values(run).reduce((a,b)=>a+b,0));carLoanMetric.textContent=yen(d.bs.carLoanBalance||0)
+}
+function renderLists(){
+ accountsList.innerHTML=d.accounts.map(a=>`<div class="listcard"><div><b>${a.name}</b><div class="muted">${yen(a.balance)}・${a.date}</div></div><button class="secondary" onclick="del('accounts','${a.id}')">削除</button></div>`).join('')||'<div class="hint">未登録</div>';
+ cardsList.innerHTML=d.cards.map(c=>`<div class="listcard"><div><b>${c.name}</b><div class="muted">${accN(c.accountId)}・${c.payDay}日</div></div><button class="secondary" onclick="del('cards','${c.id}')">削除</button></div>`).join('')||'<div class="hint">未登録</div>';
+ recList.innerHTML=d.recurring.map(r=>`<div class="listcard"><div><b>${r.name}</b><div class="muted">${yen(r.amount)}・${r.method==='bank'?accN(r.targetId):cardN(r.targetId)}</div></div><button class="secondary" onclick="del('recurring','${r.id}')">削除</button></div>`).join('')||'<div class="hint">未登録</div>';
+ spendList.innerHTML=d.cardSpend.map(s=>`<div class="listcard"><div><b>${s.month} ${cardN(s.cardId)}</b><div class="muted">${yen(s.amount)}</div></div><button class="secondary" onclick="del('cardSpend','${s.id}')">削除</button></div>`).join('')||'<div class="hint">未登録</div>';
+ insList.innerHTML=d.installments.map(x=>`<div class="listcard"><div><b>${x.name}</b><div class="muted">${cardN(x.cardId)}・${yen(x.amount)} × ${x.count}回</div></div><button class="secondary" onclick="del('installments','${x.id}')">削除</button></div>`).join('')||'<div class="hint">未登録</div>';
+}
+function renderBS(){
+ brokerDeposits.value=d.bs.brokerDeposits||0;carLoanBalance.value=d.bs.carLoanBalance||0;carLoanPayment.value=d.bs.carLoanPayment||0;carLoanPrincipal.value=d.bs.carLoanPrincipal||0;carLoanDay.value=d.bs.carLoanDay||27;
+ const banks=d.accounts.reduce((s,a)=>s+a.balance,0),assets=banks+(d.bs.brokerDeposits||0),loan=d.bs.carLoanBalance||0;
+ bsBanks.textContent=yen(banks);bsBroker.textContent=yen(d.bs.brokerDeposits||0);bsAssets.textContent=yen(assets);bsCarLoan.textContent=yen(loan);bsNet.textContent=yen(assets-loan)
+}
+function render(){
+ const aopts=d.accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');cardAccount.innerHTML=aopts;carLoanAccount.innerHTML='<option value="">未設定</option>'+aopts;if(d.bs.carLoanAccount)carLoanAccount.value=d.bs.carLoanAccount;
+ const copts=d.cards.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');spendCard.innerHTML=copts;insCard.innerHTML=copts;refreshMethodTarget();renderLists();renderBS();renderCF()
+}
+function exportData(){let blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-cashflow-backup.json';a.click()}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{d=JSON.parse(r.result);save()}catch{alert('読込に失敗しました')}};r.readAsText(f)}
+function resetAll(){if(confirm('全データを削除しますか？')){d=JSON.parse(JSON.stringify(blank));save()}}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js');
+render();
+</script>
+</body>
+</html>
