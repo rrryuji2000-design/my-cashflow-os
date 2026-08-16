@@ -1,0 +1,11 @@
+My Cashflow OS 更新手順（iPhone）
+
+1. このZIPを「ファイル」アプリに保存します。
+2. ZIPを1回タップして解凍します。
+3. GitHubで rrryuji2000-design/my-cashflow-os を開きます。
+4. 緑色の「Code」ボタン横の「…」を押し、「Upload files」を選びます。
+5. 解凍したフォルダ内の index.html と service-worker.js を選択します。
+6. 画面下の「Commit changes」を押します。
+7. 1〜3分後、ホーム画面のCashflowアプリを完全に閉じて開き直します。
+
+入力済みデータはiPhone内に保存されているため、この更新では消えません。
