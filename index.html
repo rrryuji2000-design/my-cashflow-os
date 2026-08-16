@@ -134,7 +134,7 @@ h3{margin:2px 0 12px;font-size:16px}.sp{margin-top:12px}.pill{display:inline-blo
 <div><div class="muted">証券口座 現在評価額</div><input id="brokerDeposits" type="number" onchange="saveBS()"></div>
 <div><div class="muted">車の現在価値</div><input id="carValue" type="number" onchange="saveBS()"></div>
 <div><div class="muted">その他資産</div><input id="otherAssets" type="number" onchange="saveBS()"></div>
-<div><div class="muted">車ローン現在残債</div><input id="carLoanBalance" type="number" onchange="saveBS()"></div>
+<div><div class="muted">車ローン元金残高（将来利息を除く）</div><input id="carLoanBalance" type="number" onchange="saveBS()"></div>
 <div><div class="muted">その他負債</div><input id="otherLiabilities" type="number" onchange="saveBS()"></div>
 <div><div class="muted">毎月引落額</div><input id="carLoanPayment" type="number" onchange="saveBS()"></div>
 <div><div class="muted">毎月元金減少額</div><input id="carLoanPrincipal" type="number" onchange="saveBS()"></div>
@@ -145,7 +145,7 @@ h3{margin:2px 0 12px;font-size:16px}.sp{margin-top:12px}.pill{display:inline-blo
 <div class="bs-side"><div class="bs-title">資産の部</div><div class="bs-group">流動資産</div><div class="bs-line"><span>現金及び預金</span><b id="bsBanks">¥0</b></div><div class="bs-group">固定資産</div><div class="bs-line"><span>投資有価証券</span><b id="bsBroker">¥0</b></div><div class="bs-line"><span>車両運搬具</span><b id="bsCarValue">¥0</b></div><div class="bs-line"><span>その他資産</span><b id="bsOtherAssets">¥0</b></div><div class="bs-line bs-grand"><span>資産合計</span><b id="bsAssets">¥0</b></div></div>
 <div class="bs-side"><div class="bs-title">負債・純資産の部</div><div class="bs-group">流動負債</div><div class="bs-line"><span>カード未払金</span><b id="bsCardPayable">¥0</b></div><div class="bs-group">固定負債</div><div class="bs-line"><span>車ローン</span><b id="bsCarLoan">¥0</b></div><div class="bs-line"><span>その他負債</span><b id="bsOtherLiabilities">¥0</b></div><div class="bs-line bs-total"><span>負債合計</span><b id="bsLiabilities">¥0</b></div><div class="bs-group">純資産</div><div class="bs-line"><span>純資産</span><b id="bsNet">¥0</b></div><div class="bs-line bs-grand"><span>負債・純資産合計</span><b id="bsRightTotal">¥0</b></div></div>
 </div>
-<div class="hint sp">普通預金とカード未払金は登録データから自動計算します。左右の合計は必ず一致します。</div>
+<div class="hint sp">普通預金とカード未払金は登録データから自動計算します。車ローンは今後の利息を含まない元金残高を入力してください。返済額には元金と利息を含めます。左右の合計は必ず一致します。</div>
 </div>
 </section>
 
