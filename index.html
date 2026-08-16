@@ -33,6 +33,7 @@ button{cursor:pointer}.primary{width:100%;background:var(--accent);color:#fff;bo
 table{width:100%;border-collapse:separate;border-spacing:0;min-width:720px}th,td{padding:9px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);font-size:12px;white-space:nowrap;background:#fff}th{background:#eef3f8;color:var(--muted);position:sticky;top:0;z-index:5}th:first-child,td:first-child{position:sticky;left:0;background:#fff;z-index:2}
 .monthbar{position:sticky;top:0;z-index:20;margin:0 0 8px;padding:10px 12px;border-radius:11px;background:#e7f1ff;color:#175fae;font-size:14px;font-weight:800;box-shadow:0 2px 8px rgba(30,70,110,.12)}
 .monthrow td{background:#e7f1ff;color:#175fae;font-weight:800}.sumrow td{background:#f3f6f9;font-weight:700}
+.bs-sheet{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:14px;overflow:hidden}.bs-side:first-child{border-right:1px solid var(--line)}.bs-title{padding:11px 10px;background:#e7f1ff;color:#175fae;font-weight:800;text-align:center}.bs-group{padding:8px 10px;background:#f3f6f9;font-size:11px;font-weight:800;color:var(--muted)}.bs-line{display:flex;justify-content:space-between;gap:6px;padding:9px 10px;border-top:1px solid var(--line);font-size:11px}.bs-line span:first-child{white-space:normal}.bs-line b{white-space:nowrap}.bs-total{background:#eef3f8;font-weight:800}.bs-grand{background:#dcecff;color:#174f8c;font-weight:900;font-size:12px}
 h3{margin:2px 0 12px;font-size:16px}.sp{margin-top:12px}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--panel2);font-size:11px;color:var(--muted)}
 .install{display:none;margin:10px 0 14px}.hint{font-size:12px;line-height:1.5;color:var(--muted)}
 .listcard{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.listcard:last-child{border-bottom:0}
@@ -128,23 +129,23 @@ h3{margin:2px 0 12px;font-size:16px}.sp{margin-top:12px}.pill{display:inline-blo
 
 <section id="bs" class="section">
 <div class="card">
-<h3>BS</h3>
+<h3>貸借対照表（BS）</h3>
 <div class="form">
-<div><div class="muted">証券口座への累計入金額</div><input id="brokerDeposits" type="number" onchange="saveBS()"></div>
+<div><div class="muted">証券口座 現在評価額</div><input id="brokerDeposits" type="number" onchange="saveBS()"></div>
+<div><div class="muted">車の現在価値</div><input id="carValue" type="number" onchange="saveBS()"></div>
+<div><div class="muted">その他資産</div><input id="otherAssets" type="number" onchange="saveBS()"></div>
 <div><div class="muted">車ローン現在残債</div><input id="carLoanBalance" type="number" onchange="saveBS()"></div>
+<div><div class="muted">その他負債</div><input id="otherLiabilities" type="number" onchange="saveBS()"></div>
 <div><div class="muted">毎月引落額</div><input id="carLoanPayment" type="number" onchange="saveBS()"></div>
 <div><div class="muted">毎月元金減少額</div><input id="carLoanPrincipal" type="number" onchange="saveBS()"></div>
 <div><div class="muted">引落日</div><input id="carLoanDay" type="number" value="27" onchange="saveBS()"></div>
 <div><div class="muted">引落口座</div><select id="carLoanAccount" onchange="saveBS()"></select></div>
 </div>
-<div class="tablewrap sp"><table><tbody>
-<tr><th>普通預金</th><td id="bsBanks">¥0</td></tr>
-<tr><th>証券口座への累計入金額</th><td id="bsBroker">¥0</td></tr>
-<tr><th>資産合計</th><td id="bsAssets">¥0</td></tr>
-<tr><th>車ローン残債</th><td id="bsCarLoan">¥0</td></tr>
-<tr><th>純資産</th><td id="bsNet">¥0</td></tr>
-</tbody></table></div>
-<div class="hint sp">CFでは「毎月引落額」を減額し、BSでは「毎月元金減少額」だけ車ローン残債を減らします。</div>
+<div class="bs-sheet sp">
+<div class="bs-side"><div class="bs-title">資産の部</div><div class="bs-group">流動資産</div><div class="bs-line"><span>現金及び預金</span><b id="bsBanks">¥0</b></div><div class="bs-group">固定資産</div><div class="bs-line"><span>投資有価証券</span><b id="bsBroker">¥0</b></div><div class="bs-line"><span>車両運搬具</span><b id="bsCarValue">¥0</b></div><div class="bs-line"><span>その他資産</span><b id="bsOtherAssets">¥0</b></div><div class="bs-line bs-grand"><span>資産合計</span><b id="bsAssets">¥0</b></div></div>
+<div class="bs-side"><div class="bs-title">負債・純資産の部</div><div class="bs-group">流動負債</div><div class="bs-line"><span>カード未払金</span><b id="bsCardPayable">¥0</b></div><div class="bs-group">固定負債</div><div class="bs-line"><span>車ローン</span><b id="bsCarLoan">¥0</b></div><div class="bs-line"><span>その他負債</span><b id="bsOtherLiabilities">¥0</b></div><div class="bs-line bs-total"><span>負債合計</span><b id="bsLiabilities">¥0</b></div><div class="bs-group">純資産</div><div class="bs-line"><span>純資産</span><b id="bsNet">¥0</b></div><div class="bs-line bs-grand"><span>負債・純資産合計</span><b id="bsRightTotal">¥0</b></div></div>
+</div>
+<div class="hint sp">普通預金とカード未払金は登録データから自動計算します。左右の合計は必ず一致します。</div>
 </div>
 </section>
 
@@ -164,7 +165,7 @@ h3{margin:2px 0 12px;font-size:16px}.sp{margin-top:12px}.pill{display:inline-blo
 
 <script>
 const KEY='myCashflowOS_pwa_v1';
-const blank={accounts:[],cards:[],recurring:[],cardSpend:[],installments:[],bs:{brokerDeposits:0,carLoanBalance:0,carLoanPayment:0,carLoanPrincipal:0,carLoanDay:27,carLoanAccount:''}};
+const blank={accounts:[],cards:[],recurring:[],cardSpend:[],installments:[],bs:{brokerDeposits:0,carValue:0,otherAssets:0,carLoanBalance:0,otherLiabilities:0,carLoanPayment:0,carLoanPrincipal:0,carLoanDay:27,carLoanAccount:''}};
 let d=JSON.parse(localStorage.getItem(KEY)||JSON.stringify(blank)); for(const k of Object.keys(blank)) if(d[k]===undefined)d[k]=blank[k];
 const yen=n=>'¥'+Math.round(n||0).toLocaleString('ja-JP');
 const now=new Date(),today=now.toISOString().slice(0,10),curMonth=today.slice(0,7);
@@ -186,7 +187,7 @@ function addCard(){if(!cardName.value.trim()||!cardAccount.value)return;d.cards.
 function addRecurring(){if(!recName.value.trim()||!recAmount.value||!recTarget.value)return;d.recurring.push({id:id(),name:recName.value.trim(),type:recType.value,amount:+recAmount.value,day:+recDay.value||1,method:recMethod.value,targetId:recTarget.value,start:recStart.value||curMonth,end:recEnd.value});recName.value='';recAmount.value='';save()}
 function addCardSpend(){if(!spendCard.value||!spendAmount.value)return;d.cardSpend.push({id:id(),month:spendMonth.value||curMonth,cardId:spendCard.value,amount:+spendAmount.value});spendAmount.value='';save()}
 function addInstallment(){if(!insName.value.trim()||!insCard.value||!insAmount.value||!insCount.value)return;d.installments.push({id:id(),name:insName.value.trim(),cardId:insCard.value,amount:+insAmount.value,start:insStart.value||curMonth,count:+insCount.value});insName.value='';insAmount.value='';save()}
-function saveBS(){d.bs={brokerDeposits:+brokerDeposits.value||0,carLoanBalance:+carLoanBalance.value||0,carLoanPayment:+carLoanPayment.value||0,carLoanPrincipal:+carLoanPrincipal.value||0,carLoanDay:+carLoanDay.value||27,carLoanAccount:carLoanAccount.value};save()}
+function saveBS(){d.bs={brokerDeposits:+brokerDeposits.value||0,carValue:+carValue.value||0,otherAssets:+otherAssets.value||0,carLoanBalance:+carLoanBalance.value||0,otherLiabilities:+otherLiabilities.value||0,carLoanPayment:+carLoanPayment.value||0,carLoanPrincipal:+carLoanPrincipal.value||0,carLoanDay:+carLoanDay.value||27,carLoanAccount:carLoanAccount.value};save()}
 function refreshMethodTarget(){recTarget.innerHTML=(recMethod.value==='bank'?d.accounts.map(a=>`<option value="${a.id}">${a.name}</option>`):d.cards.map(c=>`<option value="${c.id}">${c.name}</option>`)).join('')}
 
 function events(){
@@ -228,9 +229,11 @@ function renderLists(){
  insList.innerHTML=d.installments.map(x=>`<div class="listcard"><div><b>${x.name}</b><div class="muted">${cardN(x.cardId)}・${yen(x.amount)} × ${x.count}回</div></div><button class="secondary" onclick="del('installments','${x.id}')">削除</button></div>`).join('')||'<div class="hint">未登録</div>';
 }
 function renderBS(){
- brokerDeposits.value=d.bs.brokerDeposits||0;carLoanBalance.value=d.bs.carLoanBalance||0;carLoanPayment.value=d.bs.carLoanPayment||0;carLoanPrincipal.value=d.bs.carLoanPrincipal||0;carLoanDay.value=d.bs.carLoanDay||27;
- const banks=d.accounts.reduce((s,a)=>s+a.balance,0),assets=banks+(d.bs.brokerDeposits||0),loan=d.bs.carLoanBalance||0;
- bsBanks.textContent=yen(banks);bsBroker.textContent=yen(d.bs.brokerDeposits||0);bsAssets.textContent=yen(assets);bsCarLoan.textContent=yen(loan);bsNet.textContent=yen(assets-loan)
+ brokerDeposits.value=d.bs.brokerDeposits||0;carValue.value=d.bs.carValue||0;otherAssets.value=d.bs.otherAssets||0;carLoanBalance.value=d.bs.carLoanBalance||0;otherLiabilities.value=d.bs.otherLiabilities||0;carLoanPayment.value=d.bs.carLoanPayment||0;carLoanPrincipal.value=d.bs.carLoanPrincipal||0;carLoanDay.value=d.bs.carLoanDay||27;
+ const banks=d.accounts.reduce((s,a)=>s+a.balance,0),broker=d.bs.brokerDeposits||0,car=d.bs.carValue||0,otherA=d.bs.otherAssets||0,assets=banks+broker+car+otherA,loan=d.bs.carLoanBalance||0,otherL=d.bs.otherLiabilities||0;
+ let cardPayable=0;d.cardSpend.forEach(s=>{let c=d.cards.find(x=>x.id===s.cardId);if(c&&dateOf(monthAdd(s.month,c.lag),c.payDay)>=today)cardPayable+=s.amount});d.installments.forEach(x=>{for(let i=0;i<x.count;i++)if(monthAdd(x.start,i)>=curMonth)cardPayable+=x.amount});
+ const liabilities=cardPayable+loan+otherL,net=assets-liabilities;
+ bsBanks.textContent=yen(banks);bsBroker.textContent=yen(broker);bsCarValue.textContent=yen(car);bsOtherAssets.textContent=yen(otherA);bsAssets.textContent=yen(assets);bsCardPayable.textContent=yen(cardPayable);bsCarLoan.textContent=yen(loan);bsOtherLiabilities.textContent=yen(otherL);bsLiabilities.textContent=yen(liabilities);bsNet.textContent=yen(net);bsNet.className=net<0?'bad':'';bsRightTotal.textContent=yen(liabilities+net)
 }
 function render(){
  const aopts=d.accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');cardAccount.innerHTML=aopts;carLoanAccount.innerHTML='<option value="">未設定</option>'+aopts;if(d.bs.carLoanAccount)carLoanAccount.value=d.bs.carLoanAccount;

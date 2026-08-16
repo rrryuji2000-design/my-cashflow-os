@@ -1,4 +1,4 @@
-My Cashflow OS 更新手順（iPhone）
+My Cashflow OS BS更新手順（iPhone）
 
 1. このZIPを「ファイル」アプリに保存します。
 2. ZIPを1回タップして解凍します。

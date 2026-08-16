@@ -1,4 +1,4 @@
-const CACHE='my-cashflow-os-pwa-v2';
+const CACHE='my-cashflow-os-pwa-v3';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 
 self.addEventListener('install',event=>{
